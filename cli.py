@@ -1,0 +1,85 @@
+# pylint: disable=wrong-import-order
+
+import os
+import sys
+import yaml
+
+from argparse import ArgumentParser
+from jinja2 import Environment, FileSystemLoader
+from jinja2.exceptions import UndefinedError
+
+def render(cwd, environ, stdin, argv):
+    """ Render template from parameters """
+
+    args = parse_args(argv)
+
+    context = load_values(args.values, stdin)
+    add_cli_values(context, args.cli_values)
+
+    env = Environment(loader=FileSystemLoader(cwd))
+    template = env.get_template(args.template)
+
+    return template.render(context)
+
+def parse_args(argv):
+    """ Parse CLI arguments """
+    cli = ArgumentParser(prog='j2', description='a minimalist Jinja2 CLI')
+
+    cli.add_argument('template', help='Template file to process')
+    cli.add_argument('--values', nargs='?', default=None,
+                     metavar='value.yaml',
+                     help='Input values file path; "-" to use stdin')
+    cli.add_argument('--set', nargs=1, action='append', default=[],
+                     metavar='my.value=42', dest='cli_values',
+                     help='Set values on the command line. Can be used multiple times.')
+    cli.add_argument('--filters', nargs='+', default=[],
+                     metavar='python-file', dest='filters',
+                     help='Load custom Jinja2 filters from a Python file: ' +
+                     'all top-level functions are imported.')
+
+    return cli.parse_args(argv)
+
+def flatten(list):
+    return [item for sublist in list for item in sublist]
+
+def load_values(values, stdin):
+    """ Load values from YAML file """
+
+    if values is None:
+        return {}
+
+    if values == '-':
+        return yaml.safe_load(stdin.read())
+
+    with open(values, 'r') as f:
+        return yaml.safe_load(f.read())
+
+def add_cli_values(context, values):
+    """ Add values from CLI args """
+    values = flatten(values)
+    for pair in values:
+        key, value = pair.split('=')
+        keys = key.split('.')
+        set_nested_value(context, keys, value)
+
+def set_nested_value(obj, keys, value):
+    """ Helper method to set nested values """
+    key = keys[0]
+    if len(keys) == 1:
+        obj[key] = value
+    else:
+        if not hasattr(obj, key):
+            obj[key] = {}
+        set_nested_value(obj[key], keys[1:], value)
+
+def main():
+    """ CLI entry point """
+    try:
+        output = render(os.getcwd(), os.environ, sys.stdin, sys.argv[1:])
+        print(output, flush=True)
+    except SystemExit:
+        return 1
+    return 0
+
+if __name__ == '__main__':
+    main()
