@@ -1,0 +1,13 @@
+language: python
+
+services:
+- docker
+
+script:
+- docker build -t thecodesmith/j2:0.1.0 .
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+- docker push thecodesmith/j2:0.1.0
+
+env:
+  DOCKER_USERNAME: thecodesmith
+  DOCKER_PASSWORD: BFA9DcHuz9nesugXsx6JktfFS8ixEqfh7UqLORhqRWWY0wG+OA+qt/aPoETAP7O6k+jo7tbSuLEynNZETUmtImCBGmLOwsKXzLTt3R3dlZx5wIgfC4t++YiqgAbx2mY6QidWHu1B4pwpb1nbK68bjvdMlzA6acs+C5t8J7dFTPUMF2TDWrpV6LUuMV/k2BXg9iGXg9pbabxXY4ic5Zr+qn9W61E02OLiAtkoaHUwFssHzJeSOiZEnwmhcF9i/yb8r8Lds2bMD04op6hz/Ftn/6ifgGjoCiSQ/7Z6CMZFYXnlB+/GKySqc+5F9B/MlbkJWg6L0zgYiyQvSvzxIonQD3KkpX11c8zyyhLTbCTBJakSJUoqv7yIZj0BrQGXRpPnevXALCv1+tta8WKiwKJH1WE4izF3JbWOz5LuavZog5GemyFrR+QT8CsLx/xPVXeVDTyPQ7x1iybhxPtNPy2ciIAEHUS2TbBA5qf1NARfR372zsJPyMI2wsV5AKGHIfLppRyOCzRDuRxfbB0H3XY5EI71xnsEtTYLiDCtWfXNaD0tOwtXmM3u8YE1DWgVmDLdg5ORD9VC7PQJNIFSb0pmq+N7oLlAWcxIg2XAG4DDljKFKTv1X96eNoxWEL8+Od/U3wKx7PbUmSXdbZxPf8qcM5TpgmK6PaD08ZvO+tUsOBQ=
