@@ -13,10 +13,10 @@ This CLI aims to provide these features in the simplest way possible.
 ## Usage
 
     ❯ j2 --help
+    a minimalist Jinja2 CLI
+
     usage: j2 [-h] [--values [value.yaml]] [--set my.value=42]
               template
-
-    a minimalist Jinja2 CLI
 
     positional arguments:
       template              Template file to process
