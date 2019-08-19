@@ -25,6 +25,9 @@ This CLI aims to provide these features in the simplest way possible.
       -h, --help            show this help message and exit
       --values [value.yaml]
                             Input values file path; "-" to use stdin
+      --filters [filters.py]
+                            Custom Jinja2 filters from Python file. Loads all
+                            top-level functions and registers them as filters.
       --set my.value=42     Set values on the command line. Can be used multiple
                             times.
 
@@ -37,3 +40,15 @@ Basic usage:
 With custom values overridden on the command line:
 
     j2 manifest.j2 --values values.yaml --set app.namespace=foo > manifest.yaml
+
+With custom filters defined in a file:
+
+    j2 manifest.j2 --filters filters.py > manifest.yaml
+
+Where the filters file looks like this:
+
+```python
+def parentheses(value):
+    """ Usage: {{ var | parentheses }} """
+    return '(' + value + ')'
+```
