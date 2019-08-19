@@ -7,18 +7,20 @@ import sys
 import yaml
 
 from argparse import ArgumentParser
+from importlib import import_module
 from jinja2 import Environment, FileSystemLoader
 from jinja2.exceptions import UndefinedError
 
 def render(cwd, environ, stdin, argv):
     """ Render template from parameters """
 
-    args = parse_args(argv)
+    env = Environment(loader=FileSystemLoader(cwd))
 
+    args = parse_args(argv)
     context = load_values(args.values, stdin)
     add_cli_values(context, args.cli_values)
+    add_filters(env, args.filters)
 
-    env = Environment(loader=FileSystemLoader(cwd))
     template = env.get_template(args.template)
 
     return template.render(context)
@@ -73,6 +75,13 @@ def set_nested_value(obj, keys, value):
         if not hasattr(obj, key):
             obj[key] = {}
         set_nested_value(obj[key], keys[1:], value)
+
+def add_filters(env, filenames):
+    for filename in filenames:
+        module = import_module(filename.strip('.py'))
+        filters = dict((name, func) for name, func
+                       in module.__dict__.items() if callable(func))
+        env.filters.update(filters)
 
 def main():
     """ CLI entry point """
