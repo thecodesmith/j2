@@ -31,6 +31,11 @@ This CLI aims to provide these features in the simplest way possible.
       --set my.value=42     Set values on the command line. Can be used multiple
                             times.
 
+## Docker
+
+The `j2` CLI is available as a Docker image hosted on Docker Hub:
+https://hub.docker.com/r/thecodesmith/j2.
+
 ## Examples
 
 Basic usage:
