@@ -10,9 +10,10 @@ import yaml
 from argparse import ArgumentParser
 from importlib import import_module
 from jinja2 import Environment, FileSystemLoader
-from jinja2.exceptions import UndefinedError
 
-builtin_filters = {'b64encode': (lambda s: base64.b64encode(s.encode('utf-8')).decode('utf-8'))}
+BUILTIN_FILTERS = {
+        'b64encode': (lambda s: base64.b64encode(s.encode('utf-8')).decode('utf-8'))
+}
 
 def render(cwd, environ, stdin, argv):
     """ Render template from parameters """
@@ -33,7 +34,7 @@ def parse_args(argv):
     cli = ArgumentParser(prog='j2', description='a minimalist Jinja2 CLI')
 
     cli.add_argument('template', help='Template file to process')
-    cli.add_argument('--values', nargs='?', default=None,
+    cli.add_argument('--values', nargs='?', action='append', default=[],
                      metavar='value.yaml',
                      help='Input values file path; "-" to use stdin')
     cli.add_argument('--set', nargs=1, action='append', default=[],
@@ -52,14 +53,18 @@ def flatten(list):
 def load_values(values, stdin):
     """ Load values from YAML file """
 
-    if values is None:
+    if values is []:
         return {}
 
     if values == '-':
         return yaml.safe_load(stdin.read())
 
-    with open(values, 'r') as f:
-        return yaml.safe_load(f.read())
+    y = {}
+    for filename in values:
+        with open(filename, 'r') as f:
+            y.update(yaml.safe_load(f))
+
+    return y
 
 def add_cli_values(context, values):
     """ Add values from CLI args """
@@ -80,7 +85,7 @@ def set_nested_value(obj, keys, value):
         set_nested_value(obj[key], keys[1:], value)
 
 def add_filters(env, filenames):
-    env.filters.update(builtin_filters)
+    env.filters.update(BUILTIN_FILTERS)
 
     for filename in filenames:
         module = import_module(filename.strip('.py'))
