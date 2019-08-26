@@ -9,7 +9,7 @@ import yaml
 
 from argparse import ArgumentParser
 from importlib import import_module
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 BUILTIN_FILTERS = {
         'b64encode': (lambda s: base64.b64encode(s.encode('utf-8')).decode('utf-8'))
@@ -26,6 +26,8 @@ def render(cwd, environ, stdin, argv):
     add_filters(env, args.filters)
 
     template = env.get_template(args.template)
+    if args.strict:
+        env.undefined = StrictUndefined
 
     return template.render(context)
 
@@ -44,6 +46,9 @@ def parse_args(argv):
                      metavar='python-file', dest='filters',
                      help='Load custom Jinja2 filters from a Python file: ' +
                      'all top-level functions are imported.')
+    cli.add_argument('--strict', nargs='?', const=True, default=True,
+                     type=lambda x: (str(x).lower() == 'true'),
+                     help='Fail on undefined elements in template')
 
     return cli.parse_args(argv)
 
