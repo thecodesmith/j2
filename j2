@@ -3,7 +3,9 @@
 # pylint: disable=wrong-import-order
 
 import base64
+import collections
 import os
+import six
 import sys
 import yaml
 
@@ -11,9 +13,18 @@ from argparse import ArgumentParser
 from importlib import import_module
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
+# Python 3.8+ compatibility
+try:
+    collectionsAbc = collections.abc
+except:
+    collectionsAbc = collections
+
 BUILTIN_FILTERS = {
-        'b64encode': (lambda s: base64.b64encode(s.encode('utf-8')).decode('utf-8'))
+        'b64encode': (lambda s: base64.b64encode(s.encode('utf-8')).decode('utf-8')),
+        'quote': (lambda s: '"' + s + '"')
 }
+
+DEBUG = False
 
 def render(cwd, environ, stdin, argv):
     """ Render template from parameters """
@@ -21,9 +32,19 @@ def render(cwd, environ, stdin, argv):
     env = Environment(loader=FileSystemLoader(cwd))
 
     args = parse_args(argv)
+
+    global DEBUG
+    DEBUG = args.debug
+    if DEBUG:
+        print('DEBUG mode enabled')
+
     context = load_values(args.values, stdin)
     add_cli_values(context, args.cli_values)
     add_filters(env, args.filters)
+
+    if DEBUG:
+        print('Final context:')
+        print(yaml.dump(context, default_flow_style=False))
 
     template = env.get_template(args.template)
     if args.strict:
@@ -42,13 +63,15 @@ def parse_args(argv):
     cli.add_argument('--set', nargs=1, action='append', default=[],
                      metavar='my.value=42', dest='cli_values',
                      help='Set values on the command line. Can be used multiple times.')
-    cli.add_argument('--filters', nargs='+', default=[],
-                     metavar='python-file', dest='filters',
+    cli.add_argument('--filters', nargs='+', default=[], metavar='python-file',
                      help='Load custom Jinja2 filters from a Python file: ' +
                      'all top-level functions are imported.')
     cli.add_argument('--strict', nargs='?', const=True, default=True,
                      type=lambda x: (str(x).lower() == 'true'),
                      help='Fail on undefined elements in template')
+    cli.add_argument('--debug', nargs='?', const=True, default=False,
+                     type=lambda x: (str(x).lower() == 'true'),
+                     help='Print debug logging')
 
     return cli.parse_args(argv)
 
@@ -67,7 +90,14 @@ def load_values(values, stdin):
     y = {}
     for filename in values:
         with open(filename, 'r') as f:
-            y.update(yaml.safe_load(f))
+            new = yaml.safe_load(f)
+            if DEBUG:
+                print('Updating context with values from {}:'.format(filename))
+                print(yaml.dump(new, default_flow_style=False))
+            update(y, new)
+            if DEBUG:
+                print('New context:')
+                print(yaml.dump(y, default_flow_style=False))
 
     return y
 
@@ -75,6 +105,8 @@ def add_cli_values(context, values):
     """ Add values from CLI args """
     values = flatten(values)
     for pair in values:
+        if DEBUG:
+            print('Setting context value {}'.format(pair))
         key, value = pair.split('=')
         keys = key.split('.')
         set_nested_value(context, keys, value)
@@ -82,10 +114,20 @@ def add_cli_values(context, values):
 def set_nested_value(obj, keys, value):
     """ Helper method to set nested values """
     key = keys[0]
+    if DEBUG:
+        print('Setting nested value {} = {}'.format(keys, value))
+
     if len(keys) == 1:
+        if DEBUG:
+            print('len(keys) == 1, setting obj[{}] = {}'.format(key, value))
         obj[key] = value
     else:
-        if not hasattr(obj, key):
+        if DEBUG:
+            print('set_nested_value.else')
+
+        if not key in obj:
+            if DEBUG:
+                print('obj does not have key "{}", setting to empty dict'.format(key))
             obj[key] = {}
         set_nested_value(obj[key], keys[1:], value)
 
@@ -97,6 +139,19 @@ def add_filters(env, filenames):
         filters = dict((name, func) for name, func
                        in module.__dict__.items() if callable(func))
         env.filters.update(filters)
+
+def update(d, u):
+    """ Recursively sets nested dictionary values
+        and returns the updated dict """
+    for k, v in six.iteritems(u):
+        dv = d.get(k, {})
+        if not isinstance(dv, collectionsAbc.Mapping):
+            d[k] = v
+        elif isinstance(v, collectionsAbc.Mapping):
+            d[k] = update(dv, v)
+        else:
+            d[k] = v
+    return d
 
 def main():
     """ CLI entry point """
