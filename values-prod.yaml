@@ -1,0 +1,3 @@
+env: prod
+database:
+  password: jamf1234

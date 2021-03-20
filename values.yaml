@@ -1,0 +1,5 @@
+env: staging
+app: hello
+database:
+  type: mysql
+  port: 3306

@@ -1,0 +1,5 @@
+foo: {{ database.password | b64encode }}
+app-name: {{ app }}
+bar:
+  hostname: app-{{ env }}-db
+  something: {{ undef }}

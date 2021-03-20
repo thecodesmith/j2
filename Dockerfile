@@ -9,7 +9,7 @@ RUN pipenv install \
  && pipenv run python setup.py bdist_wheel
 
 # runnable container
-FROM python:3.7-alpine
+FROM python:3.9-alpine
 
 COPY --from=build /app/dist/*.whl .
 COPY j2 /usr/local/bin/j2
