@@ -1,6 +1,30 @@
 CHANGES
 =======
 
+1.2.0
+-----
+
+* Update jinja2 from 2.10.1 to 2.11.3
+* Update Python from 3.7 to 3.9 in Dockerfile
+
+1.1.1
+-----
+
+* Fix setting nested values from `--set` args
+* Add `--debug` flag
+
+1.1.0
+-----
+
+* Add b64encode filter
+* Support multiple values files
+
+1.0.0
+-----
+
+* Add Docker image
+* Add filters
+
 0.1.0
 -----
 
