@@ -36,6 +36,10 @@ This CLI aims to provide these features in the simplest way possible.
 The `j2` CLI is available as a Docker image hosted on Docker Hub:
 https://hub.docker.com/r/thecodesmith/j2.
 
+Run `j2` locally in Docker with an alias like this:
+
+    alias j2='docker run -it --rm -w /app -v $PWD:/app thecodesmith/j2 j2'
+
 ## Examples
 
 Basic usage:
