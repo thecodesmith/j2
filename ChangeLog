@@ -1,29 +1,50 @@
 CHANGES
 =======
 
+* Update readme with Docker alias
+
+v1.3.0
+------
+
+* Add missing library
+* Bump pyyaml from 5.1.2 to 5.4
+
+v1.2.0
+------
+
+* Update changelog
+
 1.2.0
 -----
 
-* Update jinja2 from 2.10.1 to 2.11.3
-* Update Python from 3.7 to 3.9 in Dockerfile
+* Update python to latest
+* Bump jinja2 from 2.10.1 to 2.11.3
 
-1.1.1
------
+v1.1.1
+------
 
-* Fix setting nested values from `--set` args
-* Add `--debug` flag
+* Fix setting nested values from --set args, add debug flag
+* Add --strict flag, default to true
 
-1.1.0
------
+v1.1.0
+------
 
+* Add gitignore
+* Enable multiple values files
 * Add b64encode filter
-* Support multiple values files
 
-1.0.0
------
+v1.0.0
+------
 
-* Add Docker image
-* Add filters
+* Docker instructions
+* Add --filters to readme
+* Implement --filters flag
+* Remove travis build in favor of hub.docker.com automated builds
+* Remove credentials
+* Change language to bash
+* Make version a variable
+* Add travis file
+* Docker dist working
 
 0.1.0
 -----

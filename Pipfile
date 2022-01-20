@@ -11,6 +11,3 @@ pbr = "*"
 jinja2 = "*"
 pyyaml = "*"
 six = "*"
-
-[requires]
-python_version = "3.7"

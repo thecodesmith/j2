@@ -16,4 +16,4 @@ COPY j2 /usr/local/bin/j2
 
 RUN python3 -m pip install *.whl
 
-CMD ["/usr/local/bin/j2"]
+CMD ["python3", "/usr/local/bin/j2"]
